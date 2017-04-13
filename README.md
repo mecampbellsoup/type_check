@@ -6,7 +6,7 @@ This library provides a minimal interface to perform type comparisons beteween a
 gem install type_check
 ```
 
-### Quick examples
+## Quick examples
 
 ```ruby
 require 'type_check'
@@ -29,12 +29,35 @@ TypeCheck::valid?([Integer, String], { answer: 42 })  # false
 TypeCheck::valid?([NilClass, String], nil)            # true
 ```
 
-### Rails usage
+## Usage
+
+### POR
+
+The basic hash-to-rules comparison operation can be used anywhere, e.g. a [Sinatra]() endpoint. Generally speaking,
+the following pattern could be useful anywhere you want to enforce type constraints on an input object/document as part of
+permitting the operation to proceed.
+
+```ruby
+TypeConstraints = {
+  input_1: String,
+  input_2: Integer,
+  optional_input_3: [NilClass, String]
+}.freeze
+
+def business_sensitive_operation!(inputs)
+  errors = type_check_params(TypeConstraints, inputs)
+  raise(BadInputsError) if errors.present?
+  # proceed with the remaining operations
+  ...
+end
+```
+
+### Rails
 
 The salient methods in the following code snippet are:
 
 * `type_check_params`: when used in a `before_action`, this method will compare each type constraint in `CreateUserParams` to the corresponding parameter value. Fail states can and should be handled by yielding to a block, where you have access to the parameters' validation errors.
-* `filtered_params`: removes non-permitted parameters, returning only key-value pairs specified in the type constraints.
+* `filtered_params`: removes non-permitted parameters, returning only key-value pairs specified in the type constraints. This method will raise an exception if called prior to `type_check_params` This method will raise an exception if called prior to `type_check_params`.
 
 ```ruby
 class UsersController < ActionController::Base
