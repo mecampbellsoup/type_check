@@ -45,7 +45,7 @@ TypeConstraints = {
 }.freeze
 
 def business_sensitive_operation!(inputs)
-  errors = type_check_params(TypeConstraints, inputs)
+  errors = assert_params_format(TypeConstraints, inputs)
   raise(BadInputsError) if errors.present?
   # proceed with the remaining operations
   ...
@@ -56,8 +56,8 @@ end
 
 The salient methods in the following code snippet are:
 
-* `type_check_params`: when used in a `before_action`, this method will compare each type constraint in `CreateUserParams` to the corresponding parameter value. Fail states can and should be handled by yielding to a block, where you have access to the parameters' validation errors.
-* `filtered_params`: removes non-permitted parameters, returning only key-value pairs specified in the type constraints. This method will raise an exception if called prior to `type_check_params` This method will raise an exception if called prior to `type_check_params`.
+* `assert_params_format`: when used in a `before_action`, this method will compare each type constraint in `CreateUserParams` to the corresponding parameter value. Fail states can and should be handled by yielding to a block, where you have access to the parameters' validation errors.
+* `filtered_params`: removes non-permitted parameters, returning only key-value pairs specified in the type constraints. This method will raise an exception if called prior to `assert_params_format` This method will raise an exception if called prior to `assert_params_format`.
 
 ```ruby
 class UsersController < ActionController::Base
@@ -69,7 +69,7 @@ class UsersController < ActionController::Base
     age:   Integer      # params[:age] is a required numeric parameter
   }.freeze
 
-  type_check_params CreateUserParams, only: :create do |errors|
+  assert_params_format CreateUserParams, only: :create do |errors|
     # Handle fail states inside this block.
     return render json: errors, status: 400
   end
